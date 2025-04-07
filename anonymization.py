@@ -1,14 +1,12 @@
 from presidio_analyzer import AnalyzerEngine
-import hashlib
-from presidio_analyzer import AnalyzerEngine
+import random
 from presidio_analyzer.predefined_recognizers import CreditCardRecognizer, EmailRecognizer, PhoneRecognizer
 from presidio_analyzer import Pattern, PatternRecognizer
-from presidio_analyzer import AnalyzerEngine
-from presidio_analyzer import PatternRecognizer
 from presidio_analyzer import RecognizerResult
 
 # Initialisation de l'analyseur Presidio
 analyzer = AnalyzerEngine()
+
 class CINRecognizer(PatternRecognizer):
     def __init__(self):
         self.entity = "CIN"
@@ -16,8 +14,8 @@ class CINRecognizer(PatternRecognizer):
             Pattern(name="Morocco CIN", regex=r"\b[A-Z]{2}\d{5}\b", score=0.8),   # Ex: AB12345
             Pattern(name="France CIN", regex=r"\b\d{12}\b", score=0.8),          # Ex: 123456789012
         ]
-        
         super().__init__(supported_entity=self.entity, patterns=patterns)
+
 analyzer.registry.add_recognizer(CINRecognizer())
 
 class DateTime2Recognizer(PatternRecognizer):
@@ -52,10 +50,14 @@ def detect_pii_columns(df):
                 break
     return pii_columns
 
+def mask_data(value):
+    """ Applique un masquage complet à la donnée en remplaçant par 5 astérisques """
+    return '*****'
+
 def anonymize_pii(df, pii_columns):
-    """ Anonymise les colonnes PII d'un DataFrame """
+    """ Anonymise les colonnes PII d'un DataFrame par masquage """
     for col in pii_columns:
-        df[col] = df[col].astype(str).apply(lambda x: hashlib.sha256(x.encode()).hexdigest()[:10])
+        df[col] = df[col].astype(str).apply(lambda x: mask_data(x))
     return df
 
 # Fonction pour anonymiser et enregistrer les données dans un fichier CSV
@@ -70,4 +72,5 @@ def generate_anonymized_file(df, file_path):
     # Enregistrer le DataFrame anonymisé dans un fichier CSV
     anonymized_df.to_csv(file_path, index=False)  # Sauvegarder en CSV sans index
     return file_path
+
 
