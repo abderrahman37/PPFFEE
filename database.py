@@ -3,7 +3,7 @@ import pandas as pd
 from sqlalchemy import text  # Importation de 'text' pour la gestion des requêtes
 
 # Connexion à la base de données PostgreSQL
-DATABASE_URL = "postgresql://postgres:123456@localhost:5432/postgres"
+DATABASE_URL = "postgresql://postgres:123456@localhost:5432/attijaridb"
 engine = sqlalchemy.create_engine(DATABASE_URL)
 
 def get_table_names():

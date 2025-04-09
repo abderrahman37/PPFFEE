@@ -3,6 +3,10 @@ import os
 import pandas as pd
 from database import get_table_names, get_table_data
 from anonymization import detect_pii_columns, anonymize_pii, generate_anonymized_file
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from vault_client import check_credentials_with_vault
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+
 
 app = Flask(__name__)
 app.secret_key = 'secret-key'  # Remplace par un vrai secret en production
@@ -13,17 +17,22 @@ def home():
         return redirect(url_for('dashboard'))
     return redirect(url_for('login'))
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if username == "admin" and password == "admin123":
+
+        if check_credentials_with_vault(username, password):
             session['user'] = username
-            return redirect(url_for('dashboard'))
+            return redirect('/dashboard')
         else:
-            flash("Identifiants incorrects.")
-    return render_template('login.html')
+            error = "Nom d'utilisateur ou mot de passe incorrect."
+
+    return render_template('login.html', error=error)
+
 
 @app.route('/logout')
 def logout():
